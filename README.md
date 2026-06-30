@@ -7,6 +7,42 @@ staying coherent and not reading like a machine wrote it.
 The thesis: word production is not the bottleneck. Coherence and taste are. The
 architecture exists to protect those two.
 
+## Try it yourself
+
+Two ways in.
+
+Inside Claude Code, use the plugin and never type a pipeline command. It runs the
+stages, shows you each result, and waits for your approval:
+
+```
+/plugin marketplace add devsandip/ludLLM
+/plugin install ludllm@ludllm
+/ludllm:ludllm-setup          # one-time: keys + install check
+/ludllm:write-spy-novel       # explains the pipeline and writes a book with you
+```
+
+Or run it locally. The first run uses mock models, so it needs no keys and costs
+nothing:
+
+```bash
+git clone https://github.com/devsandip/ludLLM
+cd ludLLM
+uv sync                              # needs uv
+uv run ludllm demo ./out             # builds the bundled example on mock models, no keys
+uv run ludllm show ./out/book_state.json
+```
+
+To open the interactive studio on a sample, or to write with real models:
+
+```bash
+uv sync --extra models               # prose + cross-family critique + pymupdf (dossier pages)
+uv run ludllm viz runs/alpha --open  # build and open the story-graph studio for a sample
+cp .env.example .env                 # add your keys to write your own book
+```
+
+A different model family must critique than drafts, so no model grades its own
+homework.
+
 ## How it works
 
 A novel is too long for any context window, so all state lives in one validated
@@ -22,15 +58,6 @@ baseline, and knowledge accrues in story time so a braided timeline stays honest
 See [docs/architecture.md](docs/architecture.md) for the full design and
 [docs/novel-pipeline-primer.md](docs/novel-pipeline-primer.md) for the idea.
 
-## Try it offline (no keys, no tokens)
-
-```bash
-uv sync                          # or: pip install -e .
-uv run ludllm demo ./out         # runs the bundled example end to end on mock models
-uv run ludllm graph ./out/book_state.json -c 9   # export the story graph at chapter 9
-uv run ludllm show ./out/book_state.json
-```
-
 ## The story-graph studio
 
 `ludllm viz runs/<project>` builds a self-contained, interactive view of one
@@ -40,40 +67,9 @@ secret and since when, a revealed-only secrets panel, and click-to-open detail
 panels for any secret or character; and a Dossiers tab with a card grid and a
 paginated dossier viewer. All epistemic logic stays in the engine core; the page
 only renders precomputed data. See
-[docs/features/story-graph-viz.md](docs/features/story-graph-viz.md).
-
-Two finished sample novels ship under `runs/alpha` and `runs/alpha-v2`, so you can
-open the studio on real output right away:
-
-```bash
-uv sync --extra models         # pymupdf (dossier pages) rides along with this extra
-uv run ludllm viz runs/alpha --open
-```
-
-## Use it inside Claude Code (plugin)
-
-LudLLM ships as a Claude Code plugin that drives the whole pipeline
-conversationally, so you never have to type a command:
-
-```
-/plugin marketplace add devsandip/ludLLM   # this public repo
-/plugin install ludllm@ludllm
-/ludllm:ludllm-setup                    # one-time: keys + install check
-/ludllm:write-spy-novel                 # explains the pipeline and writes a book with you
-```
-
-## Real models
-
-The core is dependency-light (Pydantic) and runs on mock models. Live prose is an
-opt-in extra:
-
-```bash
-uv sync --extra models     # adds Anthropic (prose) + Google Gemini / OpenAI (cross-family critique)
-cp .env.example .env        # add your keys
-```
-
-A different model family must critique than drafts, so no model grades its own
-homework.
+[docs/features/story-graph-viz.md](docs/features/story-graph-viz.md). Two finished
+sample novels ship under `runs/alpha` and `runs/alpha-v2`, so you can open the
+studio on real output right away (see the quickstart above).
 
 ## Development
 

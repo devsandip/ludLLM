@@ -30,9 +30,10 @@ from ludllm.eval import critique_notes, critique_stage, has_rubric
 from ludllm.models.base import ModelBundle
 from ludllm.params import load_params
 from ludllm.pipeline.dossier import build_dossier_artifacts
-from ludllm.pipeline.stages import SETUP_STAGES, STAGE_DOSSIER
+from ludllm.pipeline.stages import FINISHING_STAGES, SETUP_STAGES, STAGE_DOSSIER, STAGE_VIZ
 from ludllm.pipeline.stages import run_stage as pipeline_run_stage
 from ludllm.state.schema import CritiqueMode, StageCritique
+from ludllm.viz.studio import build_viz
 
 
 @dataclass
@@ -45,8 +46,9 @@ class StageRun:
 
 
 def _invalidate_from(state, stage: str) -> None:
-    """Unfreeze this stage and everything downstream so they can be re-run. For the
-    off-spine dossier stage there is no downstream, so just unfreeze it."""
+    """Unfreeze this stage and everything downstream on the setup spine so they can
+    be re-run. The off-spine stages (dossier, viz) have no spine downstream, so each
+    just unfreezes itself."""
     if stage not in SETUP_STAGES:
         state.meta.frozen_stages = [s for s in state.meta.frozen_stages if s != stage]
         return
@@ -55,16 +57,58 @@ def _invalidate_from(state, stage: str) -> None:
     state.meta.frozen_stages = [s for s in state.meta.frozen_stages if s not in downstream]
 
 
+def pending_finishing_stages(project: NovelProject) -> list[str]:
+    """The mandatory finishing stages (`FINISHING_STAGES`: dossier, viz) that have
+    not run yet. They run AFTER the writer, so the dossiers and the studio reflect
+    the final book; empty means the book is finished (given the manuscript is)."""
+    frozen = set(project.load().meta.frozen_stages)
+    return [s for s in FINISHING_STAGES if s not in frozen]
+
+
+def run_finishing_stages(project: NovelProject, models: ModelBundle | None) -> list[StageRun]:
+    """Run the finishing stages in order on the completed manuscript: dossier (on
+    `models`) then viz (model-free). Built from the FINAL state, because the chapter
+    loop mutated it while writing. Idempotent: dossier is skipped if already frozen;
+    viz always rebuilds, so the studio is never stale."""
+    return [
+        run_stage(project, STAGE_DOSSIER, models),
+        run_stage(project, STAGE_VIZ, None),
+    ]
+
+
+def _run_viz_stage(project: NovelProject) -> StageRun:
+    """The viz stage: an off-spine, read-only view producer. It authors no state,
+    has no rubric, and needs no models. It renders the interactive story-graph
+    studio (viz/studio.html) from the current book_state.json.
+
+    Unlike an authoring stage it always rebuilds (a view is cheap and should never
+    go stale), and it is recorded in frozen_stages only so `ludllm status` shows it
+    done. The standalone `ludllm viz` command does the same render without touching
+    the freeze, for an ad-hoc refresh. Best run after the dossier stage so the
+    Dossiers tab is populated; the Story Graph needs only the outline."""
+    state = project.load()
+    studio = build_viz(project.root)
+    if STAGE_VIZ not in state.meta.frozen_stages:
+        state.meta.frozen_stages.append(STAGE_VIZ)
+        project.save(state)
+    return StageRun(stage=STAGE_VIZ, ran=True, rendered=[str(studio)])
+
+
 def run_stage(
     project: NovelProject,
     stage: str,
-    models: ModelBundle,
+    models: ModelBundle | None,
     *,
     force: bool = False,
     notes: str = "",
     critique: bool | None = None,
     critique_mode: CritiqueMode | None = None,
 ) -> StageRun:
+    # viz is an off-spine, model-free view producer; short-circuit before any of the
+    # model/critique/render machinery (it authors no state and needs no bundle).
+    if stage == STAGE_VIZ:
+        return _run_viz_stage(project)
+
     # Unset args fall back to the project's params (params.toml). An explicit value
     # (e.g. a --critique-mode flag, or a test) always wins.
     params = load_params(project.root)

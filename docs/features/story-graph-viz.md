@@ -18,6 +18,28 @@ The supersedes the single-`recording.json` replay demo for the local case: the
 studio is per-novel, opens on the user's own book, and adds the secrets panel and
 the detail/dossier surfaces.
 
+### Runs as an off-spine but mandatory stage
+
+The studio is wired as a runnable pipeline stage, `STAGE_VIZ` (`ludllm stage
+runs/<proj> viz`), in addition to the standalone `ludllm viz` command. It is
+deliberately **off the authoring spine** (`SETUP_STAGES`), the same shape as the
+dossier stage: it authors no state, has no dimensional rubric, and needs no models
+(`run_stage` short-circuits it to `_run_viz_stage` in `authoring/run.py` with
+`models=None`). Unlike an authoring stage it **always rebuilds** (a view should
+never go stale) and is **never invalidated by an upstream `--force`** (downstream
+invalidation only walks the spine); it records itself in `frozen_stages` once so
+`ludllm status` shows it done. Best run after the dossier stage so the Dossiers tab
+is populated; the Story Graph tab needs only the outline. The standalone `ludllm
+viz` command does the same render for an ad-hoc refresh.
+
+Off-spine does not mean optional. viz (and dossier) are **mandatory finishing
+stages**: both are in `FINISHING_STAGES`, and they run **after** the writer, on the
+final state, because the chapter loop writes belief updates as it goes (an earlier
+build would be stale). The full-book runner calls `run_finishing_stages` once every
+chapter is accepted; the book is not finished without them. `ludllm status` shows a
+"Finishing stages" line. The Story Graph tab needs only the outline, so the `ludllm
+viz` alias can still render a mid-write peek.
+
 ## Architecture
 
 - **Precompute in Python, render-only in JS.** All who-knows-what logic

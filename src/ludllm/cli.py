@@ -31,14 +31,14 @@ from ludllm.authoring.checks import check_state
 from ludllm.authoring.interactive import prompt_stage_params
 from ludllm.authoring.project import create_project, open_project
 from ludllm.authoring.render import render_all
-from ludllm.authoring.run import critique_only
+from ludllm.authoring.run import critique_only, pending_finishing_stages
 from ludllm.authoring.run import run_stage as author_run_stage
 from ludllm.authoring.run import stale_stages
 from ludllm.examples.mole import scripted_author, seed_state
 from ludllm.models.base import ModelBundle
 from ludllm.models.mock import MockModel
 from ludllm.params import STAGE_PARAMS, resolve_with_sources, write_global_template
-from ludllm.pipeline.stages import RUNNABLE_STAGES, SETUP_STAGES, run_stage
+from ludllm.pipeline.stages import RUNNABLE_STAGES, SETUP_STAGES, STAGE_VIZ, run_stage
 from ludllm.pipeline.writer import LoopConfig, run_chapter
 from ludllm.state.schema import BookState, CritiqueMode, GenreProfile
 from ludllm.state.store import load_state, save_state
@@ -155,8 +155,10 @@ def cmd_stage(args: argparse.Namespace) -> int:
     # Unset flags (None) fall through to the project's params.toml; an explicit flag wins.
     critique = False if args.no_critique else None
     critique_mode = CritiqueMode(args.critique_mode) if args.critique_mode else None
+    # viz is a model-free view producer; do not build (or require keys for) a bundle.
+    bundle = None if args.stage == STAGE_VIZ else _real_bundle()
     run = author_run_stage(
-        project, args.stage, _real_bundle(),
+        project, args.stage, bundle,
         force=args.force,
         critique=critique,
         critique_mode=critique_mode,
@@ -218,6 +220,13 @@ def cmd_status(args: argparse.Namespace) -> int:
     stale = stale_stages(project)
     if stale:
         print(f"Possibly stale: {', '.join(stale)}")
+    # Finishing stages (dossier, viz) are off-spine, mandatory, and run LAST, after
+    # the manuscript, so they reflect the final book.
+    pending = pending_finishing_stages(project)
+    if pending:
+        print(f"Finishing stages (run after the manuscript): pending -> {', '.join(pending)}")
+    else:
+        print("Finishing stages: done (dossiers + studio built)")
     issues = check_state(state)
     if issues:
         print(f"\nReview checks ({len(issues)}):")
@@ -283,9 +292,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_new.add_argument("--runs", default="runs", help="parent directory for projects")
     p_new.set_defaults(func=cmd_new)
 
-    p_stage = sub.add_parser("stage", help="run one setup stage on real models")
+    p_stage = sub.add_parser("stage", help="run one pipeline stage (setup stages use real models; viz is offline)")
     p_stage.add_argument("project", help="path to the novel project folder")
-    p_stage.add_argument("stage", help="normalize | world | cast | structure | outline | dossier")
+    p_stage.add_argument("stage", help="normalize | world | cast | structure | outline | dossier | viz")
     p_stage.add_argument("--force", action="store_true", help="regenerate (invalidates downstream)")
     p_stage.add_argument(
         "--critique-mode", choices=[m.value for m in CritiqueMode], default=None,

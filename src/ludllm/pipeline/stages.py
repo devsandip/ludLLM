@@ -29,17 +29,34 @@ STAGE_CAST = "cast"
 STAGE_STRUCTURE = "structure"
 STAGE_OUTLINE = "outline"
 STAGE_DOSSIER = "dossier"
+STAGE_VIZ = "viz"
 
 # The setup stages, in order. Cast sits between world and structure: it needs the
 # facts (Stage 1) to set belief states, and structure/outline need the people.
 # Stage 5 (the chapter loop) is its own engine.
 SETUP_STAGES = [STAGE_NORMALIZE, STAGE_WORLD, STAGE_CAST, STAGE_STRUCTURE, STAGE_OUTLINE]
 
-# The dossier stage runs after outline and before the writer. It is deliberately
-# NOT in SETUP_STAGES (the linear JSON-authoring spine the critique panel and the
-# downstream-invalidation logic walk): it produces image/PDF artifacts, has no
-# dimensional rubric, and depends on the outline being done rather than feeding it.
-RUNNABLE_STAGES = [*SETUP_STAGES, STAGE_DOSSIER]
+# Off-spine artifact stages. Deliberately NOT in SETUP_STAGES (the linear
+# JSON-authoring spine the critique panel and the downstream-invalidation logic
+# walk): they produce artifacts from finished state, have no dimensional rubric, and
+# are not cascade-invalidated when an upstream stage is regenerated with --force.
+# They are FINISHING stages, run after the writer (see FINISHING_STAGES below).
+#   dossier -> per-character classified files + PDF/portrait artifacts.
+#   viz     -> the interactive story-graph studio (viz/studio.html), a read-only
+#              view of the state. It authors no state and needs no models; it is
+#              handled in the authoring layer (authoring/run.py), not _REGISTRY.
+# RUNNABLE_STAGES is everything you can invoke with `ludllm stage`.
+RUNNABLE_STAGES = [*SETUP_STAGES, STAGE_DOSSIER, STAGE_VIZ]
+
+# Off-spine, MANDATORY, and run LAST. dossier and viz are not on the critique/
+# invalidation spine, but they are not optional either: a finished book ships with
+# its dossiers and its studio. They run AFTER the writer, because the chapter loop
+# mutates state as it goes (belief updates from extract, plus any mid-write authored
+# edits), so the dossiers and the knowledge-graph studio must be built from the
+# FINAL book, not a pre-write snapshot the writing would invalidate. The full-book
+# runner runs them once the manuscript is complete; `ludllm status` reports them as
+# pending until then. Mandatory means required-to-finish, not auto-run.
+FINISHING_STAGES = [STAGE_DOSSIER, STAGE_VIZ]
 
 _REGISTRY: dict[str, Callable[..., None]] = {
     STAGE_NORMALIZE: normalize,

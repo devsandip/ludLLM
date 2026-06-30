@@ -140,8 +140,29 @@ Once the outline is approved, run the writer stage. It drafts chapters to
 the repo's full-book runner if one exists (`scripts/write_book.py`, or
 `scripts/run_alpha_v2.py`); otherwise build a small runner that scaffolds the
 setup gated, then loops chapters with act-boundary stops, before a long unattended
-write. Writer params worth surfacing: `writer.max_revise`, `writer.retries`,
+write. The writer needs only the outline; do not build dossiers or the studio yet.
+Writer params worth surfacing: `writer.max_revise`, `writer.retries`,
 `writer.advisory`.
+
+## 6. Finish the book: dossiers and the story graph (mandatory, run last)
+
+When every chapter is accepted, run the two off-spine finishing stages on the FINAL
+book. They run last because the chapter loop mutates state while writing, so an
+earlier build would be stale. They are mandatory: the book is not finished without
+them, and `ludllm status` shows a "Finishing stages" line.
+
+- `ludllm stage runs/<proj> dossier` builds the per-character classified files
+  (the redactions are bound to the secret ledger).
+- `ludllm stage runs/<proj> viz` builds the interactive story-graph studio at
+  `runs/<proj>/viz/studio.html`: a browser view of who knows which secret and
+  since when, with a Story Graph tab (three chapter-axis views: Knowledge, a
+  3-chapter window, and Propagation) and a Dossiers tab. It is model-free and
+  read-only.
+
+The full-book runner (`scripts/write_book.py`) runs both automatically once the
+manuscript is complete. Run viz after dossier so its Dossiers tab is populated, then
+show the user the studio. The Story Graph tab needs only the outline, so you can also
+run the `ludllm viz` alias mid-write to peek at the asymmetry; re-run it any time.
 
 ## Non-negotiables
 

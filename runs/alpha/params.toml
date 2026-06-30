@@ -1,0 +1,11 @@
+# LudLLM per-project parameter overrides. Anything set here overrides the
+# global file (~/.config/ludllm/params.toml) and the package defaults.
+# See `ludllm params <project>` for the resolved values and their sources.
+
+[critique]
+mode = "auto_revise"
+auto_revise_passes = 2
+
+[writer]
+max_revise = 5
+advisory = true

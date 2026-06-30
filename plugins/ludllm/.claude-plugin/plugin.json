@@ -1,0 +1,14 @@
+{
+  "name": "ludllm",
+  "displayName": "LudLLM Spy Novel Studio",
+  "version": "0.1.0",
+  "description": "Write a full-length spy novel end to end with a human-gated, five-stage agent pipeline. Setup walks you through the model keys; the writer guides you from premise to manuscript, one approved stage at a time.",
+  "author": {
+    "name": "Sandip Dev",
+    "email": "dev.sandip@gmail.com"
+  },
+  "homepage": "https://github.com/devsandip/ludLLM",
+  "repository": "https://github.com/devsandip/ludLLM",
+  "license": "MIT",
+  "keywords": ["writing", "fiction", "novel", "spy", "agents", "pipeline"]
+}

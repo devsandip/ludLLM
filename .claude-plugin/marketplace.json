@@ -1,0 +1,16 @@
+{
+  "name": "ludllm",
+  "owner": {
+    "name": "Sandip Dev",
+    "email": "dev.sandip@gmail.com"
+  },
+  "description": "LudLLM: an agentic pipeline that writes a full-length spy novel end to end, human-gated stage by stage.",
+  "plugins": [
+    {
+      "name": "ludllm",
+      "source": "./plugins/ludllm",
+      "description": "Guided spy-novel authoring. Setup walks you through model keys; the writer takes you from premise to manuscript through a five-stage, human-gated pipeline.",
+      "keywords": ["writing", "fiction", "novel", "spy", "agents", "pipeline"]
+    }
+  ]
+}

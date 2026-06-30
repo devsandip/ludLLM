@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+
+# Generated output. The shipped sample novels under runs/alpha and runs/alpha-v2
+# are kept; anything else under runs/ (and any regenerated viz/) is yours.
+/out/
+/runs/*
+!/runs/alpha
+!/runs/alpha-v2
+/runs/*/viz/

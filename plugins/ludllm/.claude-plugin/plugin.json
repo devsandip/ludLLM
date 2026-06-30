@@ -7,8 +7,8 @@
     "name": "Sandip Dev",
     "email": "dev.sandip@gmail.com"
   },
-  "homepage": "https://github.com/devsandip/LudLLM",
-  "repository": "https://github.com/devsandip/LudLLM",
+  "homepage": "https://github.com/devsandip/ludLLM",
+  "repository": "https://github.com/devsandip/ludLLM",
   "license": "MIT",
   "keywords": ["writing", "fiction", "novel", "spy", "agents", "pipeline"]
 }

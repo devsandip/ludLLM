@@ -1,6 +1,6 @@
 # LudLLM Spy Novel Studio (Claude Code plugin)
 
-A guided front end for [LudLLM](https://github.com/devsandip/ludLLM), the agentic
+A guided front end for [LudLLM](https://github.com/devsandip/LudLLM), the agentic
 pipeline that writes a full-length spy novel end to end, human-gated stage by
 stage. The plugin is the conversational app; the `ludllm` Python package is the
 engine that does the work.
@@ -20,7 +20,7 @@ Two skills:
 ## Install
 
 ```
-/plugin marketplace add devsandip/ludLLM
+/plugin marketplace add devsandip/LudLLM
 /plugin install ludllm@ludllm
 ```
 
@@ -33,7 +33,7 @@ Installing the plugin gives you the skills (the guidance). The skills drive the
 `ludllm` CLI, which you install separately from the LudLLM repo:
 
 ```
-git clone https://github.com/devsandip/ludLLM.git && cd ludLLM
+git clone https://github.com/devsandip/LudLLM.git && cd LudLLM
 uv sync --extra models
 ```
 

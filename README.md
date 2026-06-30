@@ -15,7 +15,7 @@ Inside Claude Code, use the plugin and never type a pipeline command. It runs th
 stages, shows you each result, and waits for your approval:
 
 ```
-/plugin marketplace add devsandip/ludLLM
+/plugin marketplace add devsandip/LudLLM
 /plugin install ludllm@ludllm
 /ludllm:ludllm-setup          # one-time: keys + install check
 /ludllm:write-spy-novel       # explains the pipeline and writes a book with you
@@ -25,8 +25,8 @@ Or run it locally. The first run uses mock models, so it needs no keys and costs
 nothing:
 
 ```bash
-git clone https://github.com/devsandip/ludLLM
-cd ludLLM
+git clone https://github.com/devsandip/LudLLM
+cd LudLLM
 uv sync                              # needs uv
 uv run ludllm demo ./out             # builds the bundled example on mock models, no keys
 uv run ludllm show ./out/book_state.json

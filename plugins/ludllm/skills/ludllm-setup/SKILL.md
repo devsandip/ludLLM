@@ -22,7 +22,7 @@ Run `ludllm --help` (or `uv run ludllm --help` if you are inside the repo).
 
 - **It works** -> the engine is installed. Skip to step 2.
 - **Command not found** -> the user has the plugin but not the engine. Guide them:
-  1. Clone it: `git clone https://github.com/devsandip/ludLLM.git && cd ludLLM`
+  1. Clone it: `git clone https://github.com/devsandip/LudLLM.git && cd LudLLM`
   2. Install with real-model support: `uv sync --extra models`
      (uv is the package manager; if missing, point them to https://docs.astral.sh/uv/).
   3. From here on, run engine commands as `uv run ludllm ...` from the repo root,
